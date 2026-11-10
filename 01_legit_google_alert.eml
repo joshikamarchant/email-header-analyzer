@@ -1,0 +1,31 @@
+Delivered-To: student.manoj@gmail.com
+Received: by 2002:a05:6214:4a1c:b0:6d2:1f3a:9c41 with SMTP id k28csp1842901qvt;
+        Sun, 2 Nov 2026 09:14:21 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHk3pQ2mWqZ8rLx9nTcV1yB7dEa5fGh
+X-Received: by 2002:a17:902:db0c:b0:1cf:4a2b:77e1 with SMTP id m12-20020a170902db0c00b001cf4a2b77e1mr9183421plx.17.1762103661842;
+        Sun, 02 Nov 2026 09:14:21 -0800 (PST)
+Authentication-Results: mx.google.com;
+       dkim=pass header.i=@accounts.google.com header.s=20230601 header.b=Qk2mRxVt;
+       spf=pass (google.com: domain of 3xyzabcd@gaia.bounces.google.com designates 209.85.220.69 as permitted sender) smtp.mailfrom=3xyzabcd@gaia.bounces.google.com;
+       dmarc=pass (p=REJECT sp=REJECT dis=NONE) header.from=accounts.google.com
+Return-Path: <3xyzabcd@gaia.bounces.google.com>
+Received: from mail-sor-f69.google.com (mail-sor-f69.google.com. [209.85.220.69])
+        by mx.google.com with SMTPS id t7-20020a056a00138700b006d19c4a2b11sor4471829pfg.52.2026.11.02.09.14.20
+        for <student.manoj@gmail.com>
+        (Google Transport Security);
+        Sun, 02 Nov 2026 09:14:20 -0800 (PST)
+Received-SPF: pass (google.com: domain of 3xyzabcd@gaia.bounces.google.com designates 209.85.220.69 as permitted sender) client-ip=209.85.220.69;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=accounts.google.com; s=20230601;
+        h=from:to:subject:date:message-id:mime-version:content-type;
+        bh=4Hk9pLmQw2RtYvB7xN3cZaE6sDgF1jU8oI5rT0yWqKs=;
+        b=Qk2mRxVtJ7pLw9sYhN4dCeB1vA3zF6gTuM0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG
+         3xKfA1dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4
+         rD6pQmLfX2wZaB9tVsE3hKcNyU0oIjRgT7lMdPbA5xWnQ4vCeH1kFzSu8ryJmO6qXtG
+From: "Google" <no-reply@accounts.google.com>
+To: student.manoj@gmail.com
+Subject: Security alert for your linked account
+Date: Sun, 02 Nov 2026 17:14:19 +0000
+Message-ID: <sAbC1dEf2GhI3jKl@google.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="000000000000a1b2c3"
+X-Notification-Type: security-alert

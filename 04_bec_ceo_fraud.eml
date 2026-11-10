@@ -1,0 +1,18 @@
+Delivered-To: accounts@northwind-industries.com
+Received: from dynamic-103-89-12-45.broadband.example.net ([103.89.12.45])
+        by mx.northwind-industries.com with ESMTP id 5Nq7Rt2wY9
+        for <accounts@northwind-industries.com>; Wed, 05 Nov 2026 10:21:44 +0530
+Authentication-Results: mx.northwind-industries.com;
+       spf=softfail (mx.northwind-industries.com: domain of r.menon@northwind-industries.com does not designate 103.89.12.45 as permitted sender) smtp.mailfrom=r.menon@northwind-industries.com;
+       dkim=none;
+       dmarc=fail (p=NONE dis=NONE) header.from=northwind-industries.com
+Return-Path: <r.menon@northwind-industries.com>
+From: "Rajesh Menon | Managing Director" <r.menon@northwind-industries.com>
+Reply-To: "Rajesh Menon" <rajesh.menon.md.office@gmail.com>
+To: accounts@northwind-industries.com
+Subject: Are you available
+Date: Wed, 05 Nov 2026 04:51:40 +0000
+Message-ID: <CAF8d9kLmQ2wRtYbVcZe1aP6sDgFjU0oXiR8kQaP@mail.gmail.com>
+X-Mailer: Microsoft Outlook 16.0
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"

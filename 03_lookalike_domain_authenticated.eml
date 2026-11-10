@@ -1,0 +1,24 @@
+Delivered-To: manoj@examplemail.in
+Received: from mail.icici-netbanking-secure.com (mail.icici-netbanking-secure.com [45.133.1.88])
+        by mx.examplemail.in with ESMTPS id 8Tq2LmN4vR7
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384)
+        for <manoj@examplemail.in>; Tue, 04 Nov 2026 11:02:33 +0530
+Authentication-Results: mx.examplemail.in;
+       spf=pass (mx.examplemail.in: domain of alerts@icici-netbanking-secure.com designates 45.133.1.88 as permitted sender) smtp.mailfrom=alerts@icici-netbanking-secure.com;
+       dkim=pass header.d=icici-netbanking-secure.com header.s=s1;
+       dmarc=pass (p=QUARANTINE dis=NONE) header.from=icici-netbanking-secure.com
+Received-SPF: pass (mx.examplemail.in: 45.133.1.88 is authorised) client-ip=45.133.1.88;
+Return-Path: <alerts@icici-netbanking-secure.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icici-netbanking-secure.com; s=s1;
+        h=from:to:subject:date;
+        bh=9Lm2QwXr4TnYbV7cZe1aP6sDfG3hJkU8oI5rT0yWqKs=;
+        b=Hn4kPwQ2mLxR9vBcT7yZaE1sDgF6jU0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG3xKf
+         A1dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4rD6
+         pQmLfX2wZaB9tVsE3hKcNyU0oIjRgT7lMdPbA5xWnQ4vCeH1kFzSu8ryJmO6qXtGwP
+From: "ICICI Bank Alerts" <alerts@icici-netbanking-secure.com>
+To: manoj@examplemail.in
+Subject: Action required: your net banking access will be suspended today
+Date: Tue, 04 Nov 2026 05:32:30 +0000
+Message-ID: <a7f3c91e2d84@icici-netbanking-secure.com>
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"

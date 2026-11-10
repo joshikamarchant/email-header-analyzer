@@ -1,0 +1,101 @@
+{
+  "A": {
+    "aspmx.l.google.com": [
+      "142.250.27.26"
+    ],
+    "icici-netbanking-secure.com": [
+      "45.133.1.88"
+    ],
+    "mx.zoho.in": [
+      "136.143.188.10"
+    ]
+  },
+  "AAAA": {},
+  "MX": {
+    "northwind-industries.com": [
+      "aspmx.l.google.com"
+    ],
+    "sfo-campus.in": [
+      "mx.zoho.in"
+    ]
+  },
+  "PTR": {
+    "37.218.234.185.in-addr.arpa": [
+      "mail.vps-cheap-host.ru"
+    ],
+    "45.12.89.103.in-addr.arpa": [
+      "dynamic-103-89-12-45.broadband.example.net"
+    ]
+  },
+  "TXT": {
+    "20230601._domainkey.accounts.google.com": [
+      "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuybmHWkRFjB2WJeI2jwlEqcOqMFuCjD4Sza1Dw2BCbRLpSeXSNcBeTV2zdJzb+4YWb7BG+Wxg9uMHtWlRUx1n3eSRMLBvZftVDkcGTpE3gxl39N8PTfAuJaHtSx18xgFULwan1mr75BYKUt5ZzQibzP8CIX7BnNmzBy9u+dPSPpVgJsNJcirIhQAl9sUJl7+eXNRXeER/SwqqkM0Qm7AWBiW2OZIW/NXjzfG29ckHSbZtqkVRnNhL7kMEnW8ALIA14+zPwoQNFsELF/sqweXTaf7gvvAr50K+AIHiM9hsMkF1tcu1gRJOyRZmcmxlSoQdKGQZ2WK/IClpAakaSgIBQIDAQAB"
+    ],
+    "_dmarc.brightlearn.io": [
+      "v=DMARC1; p=quarantine; adkim=r; aspf=r; pct=100; rua=mailto:dmarc@brightlearn.io"
+    ],
+    "_dmarc.examplebank.in": [
+      "v=DMARC1; p=reject; adkim=s; aspf=s; rua=mailto:dmarc@examplebank.in"
+    ],
+    "_dmarc.google.com": [
+      "v=DMARC1; p=reject; rua=mailto:mailauth-reports@google.com"
+    ],
+    "_dmarc.icici-netbanking-secure.com": [
+      "v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com"
+    ],
+    "_dmarc.northwind-industries.com": [
+      "v=DMARC1; p=none; rua=mailto:dmarc@northwind-industries.com"
+    ],
+    "_dmarc.paypal.com": [
+      "v=DMARC1; p=reject; rua=mailto:d@rua.agari.com; ruf=mailto:dk@bounce.paypal.com; fo=1"
+    ],
+    "_netblocks.google.com": [
+      "v=spf1 ip4:35.190.247.0/24 ip4:64.233.160.0/19 ip4:66.102.0.0/20 ip4:66.249.80.0/20 ip4:72.14.192.0/18 ip4:74.125.0.0/16 ip4:108.177.8.0/21 ip4:173.194.0.0/16 ip4:209.85.128.0/17 ~all"
+    ],
+    "_netblocks2.google.com": [
+      "v=spf1 ip6:2a00:1450:4000::/36 ip6:2607:f8b0:4000::/36 ~all"
+    ],
+    "_netblocks3.google.com": [
+      "v=spf1 ip4:172.217.0.0/19 ip4:142.250.0.0/15 ~all"
+    ],
+    "_spf.google.com": [
+      "v=spf1 include:_netblocks.google.com include:_netblocks2.google.com include:_netblocks3.google.com ~all"
+    ],
+    "brightlearn.io": [
+      "v=spf1 include:sendgrid.net -all"
+    ],
+    "examplebank.in": [
+      "v=spf1 ip4:103.21.244.0/24 -all"
+    ],
+    "gaia.bounces.google.com": [
+      "v=spf1 include:_spf.google.com ~all"
+    ],
+    "google.com": [
+      "v=spf1 include:_spf.google.com ~all"
+    ],
+    "icici-netbanking-secure.com": [
+      "v=spf1 ip4:45.133.1.0/24 -all"
+    ],
+    "mail2024._domainkey.examplebank.in": [
+      "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvSJsDIwXOrp4xi7yuiBmrclePoiR7ihXQboKnwK3VNGdeI3aUXa4xx2R0FCm5ySStH9S3z3PgeUQHRu8fQYUyJDZTAugoJgeqbP9IW3BLimUbKUv3ewyXIhsUs8rExC5/YeFKVgbcAfHtZ0p34Gxo3LLoiBH+UqBdy8ogpP3ZKpgjPMxC4QuUdaxXstuaqjLtbsZl1eoYKacNLf4LPCFXT5so3ATVFmkjjOH/9rDmaHsI8p7NwORg0gPjpJ1A1w/x/tPQVHNJ8EfzNN7F0MPfBoBlgJMCE3pmxe8tfK4EunKE2Nh0Gvo2HLkBXuIDgnETzE1JgIXne7xyttV3mn0nQIDAQAB"
+    ],
+    "northwind-industries.com": [
+      "v=spf1 include:_spf.google.com ~all"
+    ],
+    "paypal.com": [
+      "v=spf1 ip4:66.211.168.0/22 ip4:173.0.84.0/24 ip4:64.4.240.0/21 -all"
+    ],
+    "s1._domainkey.brightlearn.io": [
+      "v=DKIM1; k=rsa; p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApz0jCWPUr9dJylzT6LqmpPSfD0JEZzo0FwrE0raGFc/fWGZGE/esoBID5/APX1pVQK3FrMK1TvuySVt9wLkE6Styd2+lvyUFLO+ivx6L2a4/nWWt2IRui83vzNBVNoEHpAclHHf27jwfe27GheU0Hh/lKLM39eBzaiZ+vxdFzEH1uPP+Z3uk2xQI7Mq2yzfjjBjgY55qkNFAMS4j2obv3YmhVRZcV65+Dymhm/c5GN0VaeaoEiI5dMhmas/h7LXBPdTDyRRq0xef1zZkkCiRwvevWk8EpoIeQLseCrEWQIXQlnvRXp8Bk6F50ApbBnKaXR3CICfFhn7B52ihWv9cvwIDAQAB"
+    ],
+    "s1._domainkey.icici-netbanking-secure.com": [
+      "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC6W2CAqUDZzLY0CTk5mLJPrD7IznXB5KodbRWm8QVnxTAXoa5JwaQ1hojnt331iMHwcRD8XEjWu8M6TZO7w+vILlBj2GsRdVhbf3AxguvvUmEmS+npd34brB0Ixw4U+6GJnawXKvrouPgISZyuT/Dtc6KxpgykVgvCpw706k/mMwIDAQAB"
+    ],
+    "sendgrid.net": [
+      "v=spf1 ip4:167.89.0.0/17 ip4:168.245.0.0/17 -all"
+    ],
+    "sfo-campus.in": [
+      "v=spf1 mx ip4:103.21.58.0/24 -all"
+    ]
+  }
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email Header Analyzer &mdash; Spoofing Detection</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">&#9993;</span>
+      <div>
+        <h1>Email Header Analyzer</h1>
+        <p class="tagline">Spoofing detection via SPF, DKIM, DMARC and forensic header analysis</p>
+      </div>
+    </div>
+    <span class="dns-badge" title="DNS resolution mode">DNS: {{ dns_mode }}</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  {% if error %}
+    <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <section class="card input-card">
+    <form method="post" action="/">
+      <label for="headers" class="field-label">
+        Paste raw email headers
+        <span class="hint">Gmail: <em>&#8942; &rarr; Show original</em> &nbsp;|&nbsp;
+          Outlook: <em>File &rarr; Properties &rarr; Internet headers</em> &nbsp;|&nbsp;
+          Thunderbird: <em>Ctrl+U</em></span>
+      </label>
+      <textarea id="headers" name="headers" rows="14" spellcheck="false"
+                placeholder="Delivered-To: you@example.com&#10;Received: from ...&#10;Authentication-Results: ...&#10;From: ...&#10;Subject: ...">{{ headers_text }}</textarea>
+      <div class="actions">
+        <button type="submit" class="btn-primary">Analyze headers</button>
+        <button type="reset" class="btn-ghost" onclick="document.getElementById('headers').value='';return false;">Clear</button>
+      </div>
+    </form>
+
+    <div class="samples">
+      <span class="samples-label">Load a test case:</span>
+      {% for s in samples %}
+        <a class="chip" href="{{ url_for('sample', name=s.file) }}">{{ s.label }}</a>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if report %}
+  {% set v = report.verdict %}
+  {% set a = report.authentication %}
+  {% set m = report.message %}
+  {% set i = report.identities %}
+
+  <section class="card verdict {{ v.label | band_class }}">
+    <div class="verdict-main">
+      <div class="verdict-text">
+        <span class="eyebrow">Verdict</span>
+        <h2>{{ v.label }}</h2>
+        <p>{{ v.advice }}</p>
+      </div>
+      <div class="gauge">
+        <div class="gauge-number">{{ v.score }}<span>/100</span></div>
+        <div class="gauge-label">risk score</div>
+        <div class="gauge-track"><div class="gauge-fill" style="width: {{ v.score }}%"></div></div>
+      </div>
+    </div>
+
+    <div class="verdict-meta">
+      <div><span class="meta-k">Sender domain grade</span><span class="meta-v grade">{{ v.grade }}</span></div>
+      <div><span class="meta-k">Confidence</span><span class="meta-v">{{ v.confidence | upper }}</span></div>
+      <div><span class="meta-k">Findings</span><span class="meta-v">{{ v.counts.critical }} critical / {{ v.counts.high }} high / {{ v.counts.medium }} medium</span></div>
+    </div>
+
+    {% if v.top_reasons %}
+    <ul class="reasons">
+      {% for r in v.top_reasons %}<li>{{ r }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    <p class="fineprint">{{ v.grade_reason }} {{ v.confidence_reason }}</p>
+  </section>
+
+  <section class="auth-grid">
+    <div class="card auth {{ a.spf.result | result_class }}">
+      <h3>SPF <span class="pill">{{ a.spf.result | upper }}</span></h3>
+      <p>{{ a.spf.explanation }}</p>
+      {% if a.spf.record %}<pre class="rec">{{ a.spf.record }}</pre>{% endif %}
+      <dl>
+        <dt>Checked domain</dt><dd>{{ a.spf.domain or '—' }}</dd>
+        <dt>Client IP</dt><dd>{{ a.spf.checked_ip or '—' }}</dd>
+        {% if a.spf.matched_mechanism %}<dt>Matched</dt><dd><code>{{ a.spf.matched_mechanism }}</code></dd>{% endif %}
+        <dt>DNS lookups</dt><dd>{{ a.spf.lookups_used }} / 10</dd>
+      </dl>
+      {% for w in a.spf.warnings %}<p class="warn">⚠ {{ w }}</p>{% endfor %}
+    </div>
+
+    <div class="card auth {{ a.dkim.result | result_class }}">
+      <h3>DKIM <span class="pill">{{ a.dkim.result | upper }}</span></h3>
+      <p>{{ a.dkim.explanation }}</p>
+      {% for s in a.dkim.signatures %}
+        <div class="sig">
+          <div class="sig-head">
+            <code>d={{ s.domain }}</code> <code>s={{ s.selector }}</code>
+            <code>{{ s.algorithm }}</code>
+            {% if s.key_bits %}<code>{{ s.key_bits }}-bit</code>{% endif %}
+            {% if s.key_found %}<span class="tick">key published</span>
+            {% else %}<span class="cross">no key in DNS</span>{% endif %}
+          </div>
+          {% if s.signed_headers %}<p class="muted">signs: {{ s.signed_headers | join(':') }}</p>{% endif %}
+          {% for issue in s.issues %}<p class="warn">⚠ {{ issue }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      {% if not a.dkim.cryptographic and a.dkim.signatures %}
+        <p class="muted">Structural audit only — paste the complete raw message (headers + body)
+        to run cryptographic verification.</p>
+      {% endif %}
+    </div>
+
+    <div class="card auth {{ a.dmarc.result | result_class }}">
+      <h3>DMARC <span class="pill">{{ a.dmarc.result | upper }}</span></h3>
+      <p>{{ a.dmarc.explanation }}</p>
+      {% if a.dmarc.record %}<pre class="rec">{{ a.dmarc.record }}</pre>{% endif %}
+      <dl>
+        <dt>Policy</dt><dd>p={{ a.dmarc.policy or '—' }}{% if a.dmarc.subdomain_policy %} sp={{ a.dmarc.subdomain_policy }}{% endif %} pct={{ a.dmarc.pct }}</dd>
+        <dt>Alignment mode</dt><dd>adkim={{ a.dmarc.adkim }} aspf={{ a.dmarc.aspf }}</dd>
+        <dt>Disposition</dt><dd>{{ a.dmarc.disposition }}</dd>
+      </dl>
+      <p class="muted"><strong>SPF alignment:</strong> {{ a.dmarc.spf_alignment_detail }}</p>
+      <p class="muted"><strong>DKIM alignment:</strong> {{ a.dmarc.dkim_alignment_detail }}</p>
+      {% for issue in a.dmarc.issues %}<p class="warn">⚠ {{ issue }}</p>{% endfor %}
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Sender identities</h3>
+    <p class="muted">Spoofing lives in the gap between the address a human sees and the
+    address that was actually authenticated.</p>
+    <table class="kv">
+      <tr><th>Visible From <em>(shown to the reader)</em></th><td>
+        {% if m.from_display %}<strong>{{ m.from_display }}</strong> {% endif %}
+        &lt;{{ i.visible_from or '—' }}&gt;</td></tr>
+      <tr><th>Envelope From <em>(Return-Path, what SPF checks)</em></th><td>{{ i.envelope_from or '—' }}</td></tr>
+      <tr><th>Reply-To <em>(where replies go)</em></th><td
+        {% if i.reply_to %}class="highlight"{% endif %}>{{ i.reply_to or 'not set' }}</td></tr>
+      <tr><th>DKIM signing domain</th><td>{{ i.dkim_domains | join(', ') or '—' }}</td></tr>
+      <tr><th>Originating IP</th><td>{{ i.originating_ip or 'unknown' }}
+        <span class="muted">({{ i.originating_ip_source }})</span></td></tr>
+      <tr><th>HELO / EHLO announced</th><td>{{ i.helo or '—' }}</td></tr>
+      <tr><th>Subject</th><td>{{ m.subject or '—' }}</td></tr>
+      <tr><th>Date</th><td>{{ m.date or '—' }}</td></tr>
+      <tr><th>Message-ID</th><td>{{ m.message_id or '—' }}</td></tr>
+    </table>
+  </section>
+
+  {% if m.hops %}
+  <section class="card">
+    <h3>Delivery path <span class="muted">({{ m.hop_count }} hops, oldest first)</span></h3>
+    <ol class="hops">
+      {% for h in m.hops %}
+      <li class="{% if h.delay_seconds is not none and h.delay_seconds < -120 %}hop-bad{% endif %}">
+        <div class="hop-n">{{ h.index }}</div>
+        <div class="hop-body">
+          <div><span class="muted">from</span> <strong>{{ h.from_host or '?' }}</strong>
+            {% if h.from_rdns %}<span class="muted">({{ h.from_rdns }})</span>{% endif %}
+            {% if h.from_ip %}<code>{{ h.from_ip }}</code>{% endif %}</div>
+          <div><span class="muted">by</span> {{ h.by_host or '?' }}
+            {% if h.protocol %}<span class="muted">with</span> {{ h.protocol }}{% endif %}</div>
+          <div class="muted">{{ h.timestamp or 'no timestamp' }}
+            {% if h.delay_seconds is not none %}
+              {% if h.delay_seconds < 0 %}<span class="badge-bad">{{ h.delay_seconds | round | int }}s — time runs backwards</span>
+              {% else %}<span class="badge">+{{ h.delay_seconds | round | int }}s</span>{% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ol>
+  </section>
+  {% endif %}
+
+  <section class="card">
+    <h3>Findings <span class="muted">({{ v.counts.total }} checks reported)</span></h3>
+    {% for f in report.findings %}
+      <div class="finding {{ f.severity | severity_class }}">
+        <div class="finding-head">
+          <span class="sev">{{ f.severity | upper }}</span>
+          <span class="finding-title">{{ f.title }}</span>
+          <span class="score">{% if f.score > 0 %}+{% endif %}{{ f.score }}</span>
+        </div>
+        <p>{{ f.detail }}</p>
+        {% if f.evidence %}<pre class="evidence">{{ f.evidence }}</pre>{% endif %}
+        {% if f.recommendation %}<p class="rec-line">&rarr; {{ f.recommendation }}</p>{% endif %}
+      </div>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h3>Recommended actions</h3>
+    <h4>For the recipient</h4>
+    <ul class="recs">{% for r in report.recommendations.recipient %}<li>{{ r }}</li>{% endfor %}</ul>
+    {% if report.recommendations.domain_owner %}
+      <h4>For the domain owner</h4>
+      <ul class="recs">{% for r in report.recommendations.domain_owner %}<li>{{ r }}</li>{% endfor %}</ul>
+    {% endif %}
+  </section>
+
+  <details class="card">
+    <summary>DNS queries performed ({{ report.meta.dns.queries }})</summary>
+    <table class="dnslog">
+      <tr><th>Name</th><th>Type</th><th>Source</th><th>Answer</th></tr>
+      {% for q in report.meta.dns.log %}
+      <tr><td><code>{{ q.name }}</code></td><td>{{ q.type }}</td><td>{{ q.source }}</td>
+          <td class="ans">{{ q.records or q.error }}</td></tr>
+      {% endfor %}
+    </table>
+  </details>
+
+  <details class="card">
+    <summary>Raw JSON report</summary>
+    <pre class="json">{{ report | tojson_pretty }}</pre>
+  </details>
+
+  {% endif %}
+</main>
+
+<footer class="wrap foot">
+  <p>Email Header Analyzer v{{ report.meta.version if report else '1.0.0' }} &mdash;
+     SPF (RFC 7208), DKIM (RFC 6376), DMARC (RFC 7489).
+     Educational / defensive use.</p>
+</footer>
+
+</body>
+</html>

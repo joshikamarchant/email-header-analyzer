@@ -1,0 +1,21 @@
+Delivered-To: manoj@examplemail.in
+Received: from mail.vps-cheap-host.ru (mail.vps-cheap-host.ru [185.234.218.37])
+        by mx.examplemail.in with ESMTP id 4Xk9mB2pQz1
+        for <manoj@examplemail.in>; Mon, 03 Nov 2026 02:41:11 +0530
+Authentication-Results: mx.examplemail.in;
+       spf=fail (mx.examplemail.in: domain of service@paypal.com does not designate 185.234.218.37 as permitted sender) smtp.mailfrom=service@paypal.com;
+       dkim=none;
+       dmarc=fail (p=REJECT dis=REJECT) header.from=paypal.com
+Received-SPF: fail (mx.examplemail.in: domain of service@paypal.com does not designate 185.234.218.37 as permitted sender) client-ip=185.234.218.37; envelope-from=service@paypal.com; helo=mail.vps-cheap-host.ru;
+Return-Path: <service@paypal.com>
+From: "PayPal Service" <service@paypal.com>
+Reply-To: paypal.secure.team01@gmail.com
+To: manoj@examplemail.in
+Subject: Urgent: Your account has been limited - verify your identity within 24 hours
+Date: Sun, 02 Nov 2026 21:11:09 +0000
+Message-ID: <20261102211109.9B2C4A17@vps-cheap-host.ru>
+X-Mailer: PHPMailer 6.8.0 (https://github.com/PHPMailer/PHPMailer)
+X-PHP-Originating-Script: 1001:sendmail_bulk.php
+X-Priority: 1 (Highest)
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"

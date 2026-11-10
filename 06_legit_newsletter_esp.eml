@@ -1,0 +1,27 @@
+Delivered-To: manoj@examplemail.in
+Received: from o1.ptr1234.brightlearn.io (o1.ptr1234.brightlearn.io [167.89.115.50])
+        by mx.examplemail.in with ESMTPS id 2Vb8Nm4qT7
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384)
+        for <manoj@examplemail.in>; Fri, 07 Nov 2026 19:30:12 +0530
+Authentication-Results: mx.examplemail.in;
+       spf=pass (mx.examplemail.in: domain of bounces+8891-abc@sendgrid.net designates 167.89.115.50 as permitted sender) smtp.mailfrom=bounces+8891-abc@sendgrid.net;
+       dkim=pass header.d=brightlearn.io header.s=s1;
+       dmarc=pass (p=QUARANTINE dis=NONE) header.from=brightlearn.io
+Received-SPF: pass (mx.examplemail.in: 167.89.115.50 is authorised) client-ip=167.89.115.50; envelope-from=bounces+8891-abc@sendgrid.net;
+Return-Path: <bounces+8891-abc@sendgrid.net>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=brightlearn.io; s=s1;
+        h=from:to:subject:date:message-id:mime-version:list-unsubscribe;
+        bh=2Pq7LwXr9TnYbV4cZe1aM6sDfG3hJkU8oI5rT0yWqKs=;
+        b=Rk9mTwQ4nLxP2vBcY7yZaE1sDgF6jU0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG3xKf
+         B2dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4rD6
+         sQmLfX2wZaB9tVsE3hKcNyU0oIjRgT7lMdPbA5xWnQ4vCeH1kFzSu8ryJmO6qXtGwQ
+From: "BrightLearn Weekly" <news@brightlearn.io>
+To: manoj@examplemail.in
+Subject: Your week in data structures: 5 new lessons are live
+Date: Fri, 07 Nov 2026 13:58:00 +0000
+Message-ID: <01000193abc4d2f1-7e9c@brightlearn.io>
+List-Unsubscribe: <https://brightlearn.io/u/abc123>, <mailto:unsubscribe@brightlearn.io>
+List-Unsubscribe-Post: List-Unsubscribe=One-Click
+Precedence: bulk
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="b1=_9ab2"

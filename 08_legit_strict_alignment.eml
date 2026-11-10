@@ -1,0 +1,24 @@
+Delivered-To: manoj@examplemail.in
+Received: from smtp-out3.examplebank.in (smtp-out3.examplebank.in [103.21.244.17])
+        by mx.examplemail.in with ESMTPS id 6Hn3Bq8wR2
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384)
+        for <manoj@examplemail.in>; Sun, 09 Nov 2026 08:12:40 +0530
+Authentication-Results: mx.examplemail.in;
+       spf=pass (mx.examplemail.in: domain of alerts@examplebank.in designates 103.21.244.17 as permitted sender) smtp.mailfrom=alerts@examplebank.in;
+       dkim=pass header.d=examplebank.in header.s=mail2024;
+       dmarc=pass (p=REJECT dis=NONE) header.from=examplebank.in
+Received-SPF: pass (mx.examplemail.in: 103.21.244.17 is authorised) client-ip=103.21.244.17; envelope-from=alerts@examplebank.in;
+Return-Path: <alerts@examplebank.in>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=examplebank.in; s=mail2024;
+        h=from:to:subject:date:message-id:mime-version;
+        bh=7Zq2LwXr4TnYbV9cPe1aM6sDfG3hJkU8oI5rT0yWqKs=;
+        b=Tn5kQwR2mLxP9vBcY4yZaE1sDgF6jU0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG3xKf
+         C3dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4rD6
+         tQmLfX2wZaB9tVsE3hKcNyU0oIjRgT7lMdPbA5xWnQ4vCeH1kFzSu8ryJmO6qXtGwR
+From: "ExampleBank Alerts" <alerts@examplebank.in>
+To: manoj@examplemail.in
+Subject: Statement for account ending 4417 is ready
+Date: Sun, 09 Nov 2026 02:42:38 +0000
+Message-ID: <20261109024238.7b2c@examplebank.in>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="==_mimepart_9a1"

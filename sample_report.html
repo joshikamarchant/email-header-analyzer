@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email Header Analyzer &mdash; Spoofing Detection</title>
+<style>
+/* Email Header Analyzer - interface styles */
+
+:root {
+  --bg:        #0e1116;
+  --panel:     #161b22;
+  --panel-2:   #1c2230;
+  --line:      #2a313c;
+  --ink:       #e6edf3;
+  --ink-dim:   #93a1b0;
+  --ink-faint: #6b7a8c;
+  --accent:    #4c8dff;
+
+  --ok:       #2ea043;
+  --low:      #3fb0c9;
+  --warn:     #d29922;
+  --bad:      #e5534b;
+  --critical: #b62324;
+
+  --radius: 10px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 20px; }
+
+/* ---------------- masthead ---------------- */
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, #131a24, #0e1116);
+  padding: 22px 0;
+  margin-bottom: 28px;
+}
+.masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.logo {
+  font-size: 26px; width: 48px; height: 48px; flex: none;
+  display: grid; place-items: center;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
+}
+.masthead h1 { font-size: 20px; margin: 0; letter-spacing: -0.2px; }
+.tagline { margin: 2px 0 0; color: var(--ink-dim); font-size: 13px; }
+.dns-badge {
+  font: 12px var(--mono); color: var(--ink-dim);
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px;
+  background: var(--panel); white-space: nowrap;
+}
+
+/* ---------------- cards ---------------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.card h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.1px; }
+.card h4 { margin: 18px 0 6px; font-size: 13px; text-transform: uppercase;
+           letter-spacing: 0.6px; color: var(--ink-dim); }
+
+.alert {
+  background: rgba(229,83,75,.12); border: 1px solid var(--bad);
+  color: #ffb3ae; padding: 12px 16px; border-radius: var(--radius); margin-bottom: 18px;
+}
+
+/* ---------------- input ---------------- */
+.field-label { display: block; font-weight: 600; margin-bottom: 8px; }
+.hint { display: block; font-weight: 400; font-size: 12.5px; color: var(--ink-dim); margin-top: 3px; }
+.hint em { color: var(--ink); font-style: normal; }
+
+textarea {
+  width: 100%; background: #0b0e13; color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px; font: 12.5px/1.6 var(--mono); resize: vertical;
+}
+textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(76,141,255,.15); }
+
+.actions { display: flex; gap: 10px; margin-top: 14px; }
+.btn-primary, .btn-ghost {
+  font-size: 14px; font-weight: 600; padding: 10px 20px;
+  border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #3b7ef0; }
+.btn-ghost { background: transparent; color: var(--ink-dim); border-color: var(--line); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+.samples { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+.samples-label { font-size: 13px; color: var(--ink-dim); margin-right: 8px; }
+.chip {
+  display: inline-block; margin: 4px 6px 4px 0; padding: 5px 12px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px;
+  color: var(--ink-dim); text-decoration: none; font-size: 12.5px;
+}
+.chip:hover { color: var(--ink); border-color: var(--accent); }
+
+/* ---------------- verdict ---------------- */
+.verdict { border-left: 5px solid var(--low); }
+.band-ok       { border-left-color: var(--ok); }
+.band-low      { border-left-color: var(--low); }
+.band-warn     { border-left-color: var(--warn); }
+.band-bad      { border-left-color: var(--bad); }
+.band-critical { border-left-color: var(--critical); }
+
+.band-ok .gauge-fill       { background: var(--ok); }
+.band-low .gauge-fill      { background: var(--low); }
+.band-warn .gauge-fill     { background: var(--warn); }
+.band-bad .gauge-fill      { background: var(--bad); }
+.band-critical .gauge-fill { background: var(--critical); }
+
+.verdict-main { display: flex; justify-content: space-between; gap: 28px; align-items: flex-start; }
+.verdict-text h2 { margin: 2px 0 8px; font-size: 26px; letter-spacing: -0.5px; }
+.verdict-text p { margin: 0; color: var(--ink-dim); max-width: 60ch; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-faint); }
+
+.gauge { text-align: right; flex: none; min-width: 190px; }
+.gauge-number { font: 700 40px/1 var(--mono); letter-spacing: -1px; }
+.gauge-number span { font-size: 15px; color: var(--ink-faint); font-weight: 400; }
+.gauge-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-faint); margin-top: 2px; }
+.gauge-track { height: 7px; background: var(--panel-2); border-radius: 999px; margin-top: 10px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 999px; }
+
+.verdict-meta { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 20px;
+                padding-top: 16px; border-top: 1px solid var(--line); }
+.meta-k { display: block; font-size: 11px; text-transform: uppercase;
+          letter-spacing: 0.8px; color: var(--ink-faint); }
+.meta-v { font-weight: 600; font-size: 14px; }
+.meta-v.grade { font: 700 22px var(--mono); }
+
+.reasons { margin: 16px 0 0; padding-left: 20px; }
+.reasons li { margin: 3px 0; }
+.fineprint { font-size: 12.5px; color: var(--ink-faint); margin: 14px 0 0; }
+
+/* ---------------- authentication cards ---------------- */
+.auth-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.auth { border-top: 3px solid var(--line); }
+.auth p { font-size: 13.5px; color: var(--ink-dim); }
+.res-pass { border-top-color: var(--ok); }
+.res-fail { border-top-color: var(--bad); }
+.res-warn { border-top-color: var(--warn); }
+.res-none { border-top-color: var(--ink-faint); }
+
+.pill { font: 11px var(--mono); padding: 3px 9px; border-radius: 999px;
+        background: var(--panel-2); border: 1px solid var(--line); margin-left: 6px; }
+.res-pass .pill { color: var(--ok); border-color: var(--ok); }
+.res-fail .pill { color: var(--bad); border-color: var(--bad); }
+.res-warn .pill { color: var(--warn); border-color: var(--warn); }
+
+.rec { background: #0b0e13; border: 1px solid var(--line); border-radius: 6px;
+       padding: 9px 11px; font: 11.5px/1.5 var(--mono); overflow-x: auto;
+       white-space: pre-wrap; word-break: break-all; color: var(--ink-dim); }
+
+dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 12px 0 0; font-size: 13px; }
+dt { color: var(--ink-faint); }
+dd { margin: 0; }
+
+.sig { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; }
+.sig-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.sig-head code, .hop-body code {
+  font: 11.5px var(--mono); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 4px; padding: 2px 7px;
+}
+.tick  { color: var(--ok);  font-size: 12px; }
+.cross { color: var(--bad); font-size: 12px; }
+.warn  { color: var(--warn); font-size: 12.5px; margin: 6px 0; }
+.muted { color: var(--ink-faint); font-size: 12.5px; }
+
+/* ---------------- tables ---------------- */
+table.kv { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 10px; }
+table.kv th { text-align: left; font-weight: 500; color: var(--ink-dim);
+              padding: 9px 14px 9px 0; vertical-align: top; width: 38%;
+              border-bottom: 1px solid var(--line); }
+table.kv th em { color: var(--ink-faint); font-style: normal; font-size: 12px; display: block; }
+table.kv td { padding: 9px 0; border-bottom: 1px solid var(--line); word-break: break-word; }
+td.highlight { color: var(--warn); font-weight: 600; }
+
+table.dnslog { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+table.dnslog th { text-align: left; color: var(--ink-faint); padding: 6px 10px 6px 0;
+                  border-bottom: 1px solid var(--line); font-weight: 500; }
+table.dnslog td { padding: 5px 10px 5px 0; border-bottom: 1px solid #20262f; vertical-align: top; }
+table.dnslog .ans { font: 11px var(--mono); color: var(--ink-dim); word-break: break-all; max-width: 420px; }
+
+/* ---------------- hops ---------------- */
+ol.hops { list-style: none; margin: 14px 0 0; padding: 0; }
+ol.hops li { display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+ol.hops li:last-child { border-bottom: none; }
+.hop-n { flex: none; width: 28px; height: 28px; border-radius: 50%;
+         background: var(--panel-2); border: 1px solid var(--line);
+         display: grid; place-items: center; font: 600 12px var(--mono); color: var(--ink-dim); }
+.hop-body { font-size: 13.5px; }
+.hop-bad .hop-n { border-color: var(--bad); color: var(--bad); }
+.badge, .badge-bad { font: 11px var(--mono); padding: 2px 8px; border-radius: 999px;
+                     background: var(--panel-2); border: 1px solid var(--line); margin-left: 6px; }
+.badge-bad { color: var(--bad); border-color: var(--bad); }
+
+/* ---------------- findings ---------------- */
+.finding { border-left: 3px solid var(--line); padding: 12px 0 12px 15px; margin-bottom: 4px; }
+.finding p { margin: 6px 0; font-size: 13.5px; color: var(--ink-dim); }
+.finding-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.finding-title { font-weight: 600; font-size: 14.5px; color: var(--ink); }
+.sev { font: 700 10px var(--mono); letter-spacing: 0.8px; padding: 3px 8px;
+       border-radius: 4px; background: var(--panel-2); }
+.score { margin-left: auto; font: 12px var(--mono); color: var(--ink-faint); }
+
+.sev-critical { border-left-color: var(--critical); }
+.sev-critical .sev { background: var(--critical); color: #fff; }
+.sev-high { border-left-color: var(--bad); }
+.sev-high .sev { color: var(--bad); }
+.sev-medium { border-left-color: var(--warn); }
+.sev-medium .sev { color: var(--warn); }
+.sev-low { border-left-color: var(--low); }
+.sev-low .sev { color: var(--low); }
+.sev-good { border-left-color: var(--ok); }
+.sev-good .sev { color: var(--ok); }
+.sev-info .sev { color: var(--ink-faint); }
+
+.evidence { background: #0b0e13; border: 1px solid var(--line); border-radius: 6px;
+            padding: 8px 11px; font: 11.5px/1.5 var(--mono); color: var(--ink-faint);
+            overflow-x: auto; white-space: pre-wrap; word-break: break-word; margin: 8px 0 0; }
+.rec-line { color: var(--accent) !important; font-size: 13px !important; }
+
+ul.recs { margin: 6px 0 0; padding-left: 20px; }
+ul.recs li { margin: 5px 0; font-size: 13.5px; }
+
+/* ---------------- details ---------------- */
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details summary::-webkit-details-marker { color: var(--ink-faint); }
+pre.json { background: #0b0e13; border: 1px solid var(--line); border-radius: 6px;
+           padding: 14px; font: 11.5px/1.5 var(--mono); color: var(--ink-dim);
+           max-height: 460px; overflow: auto; margin-top: 12px; }
+
+.foot { color: var(--ink-faint); font-size: 12.5px; padding: 24px 20px 40px;
+        border-top: 1px solid var(--line); margin-top: 28px; }
+
+@media (max-width: 680px) {
+  .verdict-main { flex-direction: column; }
+  .gauge { text-align: left; }
+  .masthead .wrap { flex-direction: column; align-items: flex-start; }
+  table.kv th { width: 44%; }
+}
+
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo">&#9993;</span>
+      <div>
+        <h1>Email Header Analyzer</h1>
+        <p class="tagline">Spoofing detection via SPF, DKIM, DMARC and forensic header analysis</p>
+      </div>
+    </div>
+    <span class="dns-badge" title="DNS resolution mode">DNS: offline</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  
+
+  <section class="card input-card">
+    <form onsubmit="return false">
+      <label for="headers" class="field-label">
+        Paste raw email headers
+        <span class="hint">Gmail: <em>&#8942; &rarr; Show original</em> &nbsp;|&nbsp;
+          Outlook: <em>File &rarr; Properties &rarr; Internet headers</em> &nbsp;|&nbsp;
+          Thunderbird: <em>Ctrl+U</em></span>
+      </label>
+      <textarea id="headers" name="headers" rows="14" spellcheck="false"
+                placeholder="Delivered-To: you@example.com&#10;Received: from ...&#10;Authentication-Results: ...&#10;From: ...&#10;Subject: ...">Delivered-To: manoj@examplemail.in
+Received: from mail.icici-netbanking-secure.com (mail.icici-netbanking-secure.com [45.133.1.88])
+        by mx.examplemail.in with ESMTPS id 8Tq2LmN4vR7
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384)
+        for &lt;manoj@examplemail.in&gt;; Tue, 04 Nov 2026 11:02:33 +0530
+Authentication-Results: mx.examplemail.in;
+       spf=pass (mx.examplemail.in: domain of alerts@icici-netbanking-secure.com designates 45.133.1.88 as permitted sender) smtp.mailfrom=alerts@icici-netbanking-secure.com;
+       dkim=pass header.d=icici-netbanking-secure.com header.s=s1;
+       dmarc=pass (p=QUARANTINE dis=NONE) header.from=icici-netbanking-secure.com
+Received-SPF: pass (mx.examplemail.in: 45.133.1.88 is authorised) client-ip=45.133.1.88;
+Return-Path: &lt;alerts@icici-netbanking-secure.com&gt;
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=icici-netbanking-secure.com; s=s1;
+        h=from:to:subject:date;
+        bh=9Lm2QwXr4TnYbV7cZe1aP6sDfG3hJkU8oI5rT0yWqKs=;
+        b=Hn4kPwQ2mLxR9vBcT7yZaE1sDgF6jU0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG3xKf
+         A1dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4rD6
+         pQmLfX2wZaB9tVsE3hKcNyU0oIjRgT7lMdPbA5xWnQ4vCeH1kFzSu8ryJmO6qXtGwP
+From: &#34;ICICI Bank Alerts&#34; &lt;alerts@icici-netbanking-secure.com&gt;
+To: manoj@examplemail.in
+Subject: Action required: your net banking access will be suspended today
+Date: Tue, 04 Nov 2026 05:32:30 +0000
+Message-ID: &lt;a7f3c91e2d84@icici-netbanking-secure.com&gt;
+MIME-Version: 1.0
+Content-Type: text/html; charset=&#34;UTF-8&#34;
+</textarea>
+      <div class="actions">
+        <button type="submit" class="btn-primary">Analyze headers</button>
+        <button type="reset" class="btn-ghost" onclick="document.getElementById('headers').value='';return false;">Clear</button>
+      </div>
+    </form>
+
+    <div class="samples">
+      <span class="samples-label">Load a test case:</span>
+      
+        <a class="chip" href="/sample/01_legit_google_alert.eml">Legit Google Alert</a>
+      
+        <a class="chip" href="/sample/02_spoofed_paypal_dmarc_reject.eml">Spoofed Paypal Dmarc Reject</a>
+      
+        <a class="chip" href="/sample/03_lookalike_domain_authenticated.eml">Lookalike Domain Authenticated</a>
+      
+        <a class="chip" href="/sample/04_bec_ceo_fraud.eml">Bec Ceo Fraud</a>
+      
+        <a class="chip" href="/sample/05_forged_received_chain.eml">Forged Received Chain</a>
+      
+        <a class="chip" href="/sample/06_legit_newsletter_esp.eml">Legit Newsletter Esp</a>
+      
+        <a class="chip" href="/sample/07_internal_spoof_no_dmarc.eml">Internal Spoof No Dmarc</a>
+      
+        <a class="chip" href="/sample/08_legit_strict_alignment.eml">Legit Strict Alignment</a>
+      
+    </div>
+  </section>
+
+  
+  
+  
+  
+  
+
+  <section class="card verdict band-bad">
+    <div class="verdict-main">
+      <div class="verdict-text">
+        <span class="eyebrow">Verdict</span>
+        <h2>Likely Spoofed</h2>
+        <p>The evidence points to a forged sender. Do not reply, click links, open attachments or act on any instruction in the message.</p>
+      </div>
+      <div class="gauge">
+        <div class="gauge-number">65<span>/100</span></div>
+        <div class="gauge-label">risk score</div>
+        <div class="gauge-track"><div class="gauge-fill" style="width: 65%"></div></div>
+      </div>
+    </div>
+
+    <div class="verdict-meta">
+      <div><span class="meta-k">Sender domain grade</span><span class="meta-v grade">B</span></div>
+      <div><span class="meta-k">Confidence</span><span class="meta-v">MEDIUM</span></div>
+      <div><span class="meta-k">Findings</span><span class="meta-v">0 critical / 2 high / 1 medium</span></div>
+    </div>
+
+    
+    <ul class="reasons">
+      <li>Display name impersonates Icici</li><li>Brand name &#39;icici&#39; embedded in an unrelated domain</li>
+    </ul>
+    
+    <p class="fineprint">DMARC is enforced with p=quarantine; failing mail is filtered but not refused. Confidence is reduced because DNS answers came from the bundled offline fixture set rather than live queries, so published policies may have changed; only headers were supplied, so DKIM could be audited structurally but not verified cryptographically.</p>
+  </section>
+
+  <section class="auth-grid">
+    <div class="card auth res-pass">
+      <h3>SPF <span class="pill">PASS</span></h3>
+      <p>IP 45.133.1.88 matched mechanism &#39;ip4:45.133.1.0/24&#39; in icici-netbanking-secure.com&#39;s SPF record - the sender is authorised to send.</p>
+      <pre class="rec">v=spf1 ip4:45.133.1.0/24 -all</pre>
+      <dl>
+        <dt>Checked domain</dt><dd>icici-netbanking-secure.com</dd>
+        <dt>Client IP</dt><dd>45.133.1.88</dd>
+        <dt>Matched</dt><dd><code>ip4:45.133.1.0/24</code></dd>
+        <dt>DNS lookups</dt><dd>0 / 10</dd>
+      </dl>
+      
+    </div>
+
+    <div class="card auth res-warn">
+      <h3>DKIM <span class="pill">NEUTRAL</span></h3>
+      <p>Signature structure and published key look sane, but cryptographic verification needs the full message body (headers alone do not contain the content that bh= hashes). Paste the complete raw email for a hard pass/fail.</p>
+      
+        <div class="sig">
+          <div class="sig-head">
+            <code>d=icici-netbanking-secure.com</code> <code>s=s1</code>
+            <code>rsa-sha256</code>
+            <code>1024-bit</code>
+            <span class="tick">key published</span>
+            
+          </div>
+          <p class="muted">signs: from:to:subject:date</p>
+          <p class="warn">⚠ h= omits message-id; those headers can be altered or added without breaking the signature</p><p class="warn">⚠ RSA key is 1024 bits; 2048 bits is the current recommendation</p>
+        </div>
+      
+      
+        <p class="muted">Structural audit only — paste the complete raw message (headers + body)
+        to run cryptographic verification.</p>
+      
+    </div>
+
+    <div class="card auth res-pass">
+      <h3>DMARC <span class="pill">PASS</span></h3>
+      <p>DMARC PASS via aligned SPF and aligned DKIM. The visible From domain is bound to an authenticated identity, so the sender address can be trusted at the domain level.</p>
+      <pre class="rec">v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com</pre>
+      <dl>
+        <dt>Policy</dt><dd>p=quarantine pct=100</dd>
+        <dt>Alignment mode</dt><dd>adkim=r aspf=r</dd>
+        <dt>Disposition</dt><dd>deliver</dd>
+      </dl>
+      <p class="muted"><strong>SPF alignment:</strong> relaxed mode: organizational domain icici-netbanking-secure.com == icici-netbanking-secure.com</p>
+      <p class="muted"><strong>DKIM alignment:</strong> DKIM d=icici-netbanking-secure.com is aligned with From (relaxed mode: organizational domain icici-netbanking-secure.com == icici-netbanking-secure.com).</p>
+      
+    </div>
+  </section>
+
+  <section class="card">
+    <h3>Sender identities</h3>
+    <p class="muted">Spoofing lives in the gap between the address a human sees and the
+    address that was actually authenticated.</p>
+    <table class="kv">
+      <tr><th>Visible From <em>(shown to the reader)</em></th><td>
+        <strong>ICICI Bank Alerts</strong> 
+        &lt;alerts@icici-netbanking-secure.com&gt;</td></tr>
+      <tr><th>Envelope From <em>(Return-Path, what SPF checks)</em></th><td>alerts@icici-netbanking-secure.com</td></tr>
+      <tr><th>Reply-To <em>(where replies go)</em></th><td
+        >not set</td></tr>
+      <tr><th>DKIM signing domain</th><td>icici-netbanking-secure.com</td></tr>
+      <tr><th>Originating IP</th><td>45.133.1.88
+        <span class="muted">(Authentication-Results/Received-SPF (client-ip))</span></td></tr>
+      <tr><th>HELO / EHLO announced</th><td>mail.icici-netbanking-secure.com</td></tr>
+      <tr><th>Subject</th><td>Action required: your net banking access will be suspended today</td></tr>
+      <tr><th>Date</th><td>2026-11-04T05:32:30+00:00</td></tr>
+      <tr><th>Message-ID</th><td>a7f3c91e2d84@icici-netbanking-secure.com</td></tr>
+    </table>
+  </section>
+
+  
+  <section class="card">
+    <h3>Delivery path <span class="muted">(1 hops, oldest first)</span></h3>
+    <ol class="hops">
+      
+      <li class="">
+        <div class="hop-n">1</div>
+        <div class="hop-body">
+          <div><span class="muted">from</span> <strong>mail.icici-netbanking-secure.com</strong>
+            <span class="muted">(mail.icici-netbanking-secure.com)</span>
+            <code>45.133.1.88</code></div>
+          <div><span class="muted">by</span> mx.examplemail.in
+            <span class="muted">with</span> ESMTPS</div>
+          <div class="muted">2026-11-04T11:02:33+05:30
+            
+          </div>
+        </div>
+      </li>
+      
+    </ol>
+  </section>
+  
+
+  <section class="card">
+    <h3>Findings <span class="muted">(6 checks reported)</span></h3>
+    
+      <div class="finding sev-high">
+        <div class="finding-head">
+          <span class="sev">HIGH</span>
+          <span class="finding-title">Display name impersonates Icici</span>
+          <span class="score">+30</span>
+        </div>
+        <p>The sender presents itself as &#34;ICICI Bank Alerts&#34; but the mail originates from icici-netbanking-secure.com, which is not a domain operated by Icici (legitimate: icicibank.com, icicibank.net).</p>
+        <pre class="evidence">From: &#34;ICICI Bank Alerts&#34; &lt;alerts@icici-netbanking-secure.com&gt;</pre>
+        <p class="rec-line">&rarr; Reach Icici through their official app or website, never this message.</p>
+      </div>
+    
+      <div class="finding sev-high">
+        <div class="finding-head">
+          <span class="sev">HIGH</span>
+          <span class="finding-title">Brand name &#39;icici&#39; embedded in an unrelated domain</span>
+          <span class="score">+24</span>
+        </div>
+        <p>The domain icici-netbanking-secure.com contains the brand &#34;icici&#34; but is not operated by it. Attackers register names like this so the brand appears in the address bar and the From line.</p>
+        <pre class="evidence">icici-netbanking-secure.com</pre>
+        
+      </div>
+    
+      <div class="finding sev-medium">
+        <div class="finding-head">
+          <span class="sev">MEDIUM</span>
+          <span class="finding-title">Subject uses pressure / credential-harvesting language</span>
+          <span class="score">+6</span>
+        </div>
+        <p>The subject matches known phishing patterns (urgency). Manufactured urgency is designed to stop the reader from checking the sender.</p>
+        <pre class="evidence">Subject: Action required: your net banking access will be suspended today</pre>
+        <p class="rec-line">&rarr; Never act on urgency in an email; verify through an independent channel.</p>
+      </div>
+    
+      <div class="finding sev-low">
+        <div class="finding-head">
+          <span class="sev">LOW</span>
+          <span class="finding-title">Single-hop delivery path</span>
+          <span class="score">+5</span>
+        </div>
+        <p>Only one Received header is present. Direct-to-MX delivery is normal for some small senders but is also what a script sending straight to the victim&#39;s mail server produces.</p>
+        <pre class="evidence">from mail.icici-netbanking-secure.com (mail.icici-netbanking-secure.com [45.133.1.88]) by mx.examplemail.in with ESMTPS id 8Tq2LmN4vR7 (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384) for &lt;manoj@exampl…</pre>
+        
+      </div>
+    
+      <div class="finding sev-good">
+        <div class="finding-head">
+          <span class="sev">GOOD</span>
+          <span class="finding-title">DMARC PASS</span>
+          <span class="score">-22</span>
+        </div>
+        <p>DMARC PASS via aligned SPF and aligned DKIM. The visible From domain is bound to an authenticated identity, so the sender address can be trusted at the domain level.</p>
+        <pre class="evidence">record: v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com</pre>
+        
+      </div>
+    
+      <div class="finding sev-good">
+        <div class="finding-head">
+          <span class="sev">GOOD</span>
+          <span class="finding-title">SPF PASS</span>
+          <span class="score">-8</span>
+        </div>
+        <p>IP 45.133.1.88 matched mechanism &#39;ip4:45.133.1.0/24&#39; in icici-netbanking-secure.com&#39;s SPF record - the sender is authorised to send.</p>
+        <pre class="evidence">record: v=spf1 ip4:45.133.1.0/24 -all</pre>
+        
+      </div>
+    
+  </section>
+
+  <section class="card">
+    <h3>Recommended actions</h3>
+    <h4>For the recipient</h4>
+    <ul class="recs"><li>Do not reply, click any link, open attachments, or act on instructions in this message.</li><li>Report it to your IT/security team and preserve the original headers as evidence.</li><li>Reach Icici through their official app or website, never this message.</li></ul>
+    
+  </section>
+
+  <details class="card">
+    <summary>DNS queries performed (3)</summary>
+    <table class="dnslog">
+      <tr><th>Name</th><th>Type</th><th>Source</th><th>Answer</th></tr>
+      
+      <tr><td><code>icici-netbanking-secure.com</code></td><td>TXT</td><td>fixture</td>
+          <td class="ans">v=spf1 ip4:45.133.1.0/24 -all</td></tr>
+      
+      <tr><td><code>s1._domainkey.icici-netbanking-secure.com</code></td><td>TXT</td><td>fixture</td>
+          <td class="ans">v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC6W2CAqUDZzLY0CTk5mLJPrD7IznXB5KodbRWm8QVnxTAXoa5JwaQ1hojnt331iMHwcRD8XEjWu8M6TZO7w+vILlBj2GsRdVhbf3AxguvvUmEmS+npd34brB0Ixw4U+6GJnawXKvrouPgISZyuT/Dtc6KxpgykVgvCpw706k/mMwIDAQAB</td></tr>
+      
+      <tr><td><code>_dmarc.icici-netbanking-secure.com</code></td><td>TXT</td><td>fixture</td>
+          <td class="ans">v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com</td></tr>
+      
+    </table>
+  </details>
+
+  <details class="card">
+    <summary>Raw JSON report</summary>
+    <pre class="json">{
+  &#34;meta&#34;: {
+    &#34;tool&#34;: &#34;Email Header Analyzer for Spoofing Detection&#34;,
+    &#34;version&#34;: &#34;1.0.0&#34;,
+    &#34;analyzed_at&#34;: &#34;2026-11-10T05:13:44.282952+00:00&#34;,
+    &#34;duration_seconds&#34;: 0.007,
+    &#34;dns&#34;: {
+      &#34;mode&#34;: &#34;offline&#34;,
+      &#34;queries&#34;: 3,
+      &#34;live_answers&#34;: 0,
+      &#34;fixture_answers&#34;: 3,
+      &#34;log&#34;: [
+        {
+          &#34;name&#34;: &#34;icici-netbanking-secure.com&#34;,
+          &#34;type&#34;: &#34;TXT&#34;,
+          &#34;source&#34;: &#34;fixture&#34;,
+          &#34;records&#34;: &#34;v=spf1 ip4:45.133.1.0/24 -all&#34;,
+          &#34;error&#34;: &#34;&#34;
+        },
+        {
+          &#34;name&#34;: &#34;s1._domainkey.icici-netbanking-secure.com&#34;,
+          &#34;type&#34;: &#34;TXT&#34;,
+          &#34;source&#34;: &#34;fixture&#34;,
+          &#34;records&#34;: &#34;v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC6W2CAqUDZzLY0CTk5mLJPrD7IznXB5KodbRWm8QVnxTAXoa5JwaQ1hojnt331iMHwcRD8XEjWu8M6TZO7w+vILlBj2GsRdVhbf3AxguvvUmEmS+npd34brB0Ixw4U+6GJnawXKvrouPgISZyuT/Dtc6KxpgykVgvCpw706k/mMwIDAQAB&#34;,
+          &#34;error&#34;: &#34;&#34;
+        },
+        {
+          &#34;name&#34;: &#34;_dmarc.icici-netbanking-secure.com&#34;,
+          &#34;type&#34;: &#34;TXT&#34;,
+          &#34;source&#34;: &#34;fixture&#34;,
+          &#34;records&#34;: &#34;v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com&#34;,
+          &#34;error&#34;: &#34;&#34;
+        }
+      ]
+    },
+    &#34;dns_live&#34;: false,
+    &#34;full_message_supplied&#34;: false
+  },
+  &#34;message&#34;: {
+    &#34;from_display&#34;: &#34;ICICI Bank Alerts&#34;,
+    &#34;from_address&#34;: &#34;alerts@icici-netbanking-secure.com&#34;,
+    &#34;from_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;return_path&#34;: &#34;alerts@icici-netbanking-secure.com&#34;,
+    &#34;return_path_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;reply_to&#34;: &#34;&#34;,
+    &#34;reply_to_domain&#34;: &#34;&#34;,
+    &#34;to&#34;: &#34;manoj@examplemail.in&#34;,
+    &#34;subject&#34;: &#34;Action required: your net banking access will be suspended today&#34;,
+    &#34;date&#34;: &#34;2026-11-04T05:32:30+00:00&#34;,
+    &#34;message_id&#34;: &#34;a7f3c91e2d84@icici-netbanking-secure.com&#34;,
+    &#34;message_id_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;x_mailer&#34;: &#34;&#34;,
+    &#34;client_ip&#34;: &#34;45.133.1.88&#34;,
+    &#34;client_ip_source&#34;: &#34;Authentication-Results/Received-SPF (client-ip)&#34;,
+    &#34;helo&#34;: &#34;mail.icici-netbanking-secure.com&#34;,
+    &#34;hop_count&#34;: 1,
+    &#34;hops&#34;: [
+      {
+        &#34;index&#34;: 1,
+        &#34;from_host&#34;: &#34;mail.icici-netbanking-secure.com&#34;,
+        &#34;from_rdns&#34;: &#34;mail.icici-netbanking-secure.com&#34;,
+        &#34;from_ip&#34;: &#34;45.133.1.88&#34;,
+        &#34;by_host&#34;: &#34;mx.examplemail.in&#34;,
+        &#34;protocol&#34;: &#34;ESMTPS&#34;,
+        &#34;tls&#34;: true,
+        &#34;recipient&#34;: &#34;manoj@examplemail.in&#34;,
+        &#34;timestamp&#34;: &#34;2026-11-04T11:02:33+05:30&#34;,
+        &#34;delay_seconds&#34;: null,
+        &#34;raw&#34;: &#34;from mail.icici-netbanking-secure.com (mail.icici-netbanking-secure.com [45.133.1.88]) by mx.examplemail.in with ESMTPS id 8Tq2LmN4vR7 (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384) for &lt;manoj@examplemail.in&gt;; Tue, 04 Nov 2026 11:02:33 +0530&#34;
+      }
+    ],
+    &#34;has_body&#34;: false,
+    &#34;header_count&#34;: 13
+  },
+  &#34;identities&#34;: {
+    &#34;visible_from&#34;: &#34;alerts@icici-netbanking-secure.com&#34;,
+    &#34;visible_from_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;visible_from_org&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;envelope_from&#34;: &#34;alerts@icici-netbanking-secure.com&#34;,
+    &#34;envelope_from_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+    &#34;reply_to&#34;: &#34;&#34;,
+    &#34;dkim_domains&#34;: [
+      &#34;icici-netbanking-secure.com&#34;
+    ],
+    &#34;originating_ip&#34;: &#34;45.133.1.88&#34;,
+    &#34;originating_ip_source&#34;: &#34;Authentication-Results/Received-SPF (client-ip)&#34;,
+    &#34;helo&#34;: &#34;mail.icici-netbanking-secure.com&#34;
+  },
+  &#34;authentication&#34;: {
+    &#34;spf&#34;: {
+      &#34;result&#34;: &#34;pass&#34;,
+      &#34;domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+      &#34;record&#34;: &#34;v=spf1 ip4:45.133.1.0/24 -all&#34;,
+      &#34;matched_mechanism&#34;: &#34;ip4:45.133.1.0/24&#34;,
+      &#34;explanation&#34;: &#34;IP 45.133.1.88 matched mechanism &#39;ip4:45.133.1.0/24&#39; in icici-netbanking-secure.com&#39;s SPF record - the sender is authorised to send.&#34;,
+      &#34;lookups_used&#34;: 0,
+      &#34;warnings&#34;: [],
+      &#34;trace&#34;: [
+        &#34;icici-netbanking-secure.com: v=spf1 ip4:45.133.1.0/24 -all&#34;
+      ],
+      &#34;checked_ip&#34;: &#34;45.133.1.88&#34;
+    },
+    &#34;spf_summary&#34;: &#34;SPF PASS - the sending IP is authorised by the envelope domain.&#34;,
+    &#34;dkim&#34;: {
+      &#34;result&#34;: &#34;neutral&#34;,
+      &#34;cryptographic&#34;: false,
+      &#34;verified_domains&#34;: [
+        &#34;icici-netbanking-secure.com&#34;
+      ],
+      &#34;explanation&#34;: &#34;Signature structure and published key look sane, but cryptographic verification needs the full message body (headers alone do not contain the content that bh= hashes). Paste the complete raw email for a hard pass/fail.&#34;,
+      &#34;signatures&#34;: [
+        {
+          &#34;index&#34;: 1,
+          &#34;domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+          &#34;selector&#34;: &#34;s1&#34;,
+          &#34;algorithm&#34;: &#34;rsa-sha256&#34;,
+          &#34;canonicalization&#34;: &#34;relaxed/relaxed&#34;,
+          &#34;signed_headers&#34;: [
+            &#34;from&#34;,
+            &#34;to&#34;,
+            &#34;subject&#34;,
+            &#34;date&#34;
+          ],
+          &#34;identity&#34;: &#34;&#34;,
+          &#34;body_length_limit&#34;: null,
+          &#34;timestamp&#34;: null,
+          &#34;expiry&#34;: null,
+          &#34;key_found&#34;: true,
+          &#34;key_type&#34;: &#34;rsa&#34;,
+          &#34;key_bits&#34;: 1024,
+          &#34;key_revoked&#34;: false,
+          &#34;key_testing&#34;: false,
+          &#34;verified&#34;: null,
+          &#34;verify_detail&#34;: &#34;&#34;,
+          &#34;issues&#34;: [
+            &#34;h= omits message-id; those headers can be altered or added without breaking the signature&#34;,
+            &#34;RSA key is 1024 bits; 2048 bits is the current recommendation&#34;
+          ],
+          &#34;raw&#34;: &#34;v=1; a=rsa-sha256; c=relaxed/relaxed; d=icici-netbanking-secure.com; s=s1; h=from:to:subject:date; bh=9Lm2QwXr4TnYbV7cZe1aP6sDfG3hJkU8oI5rT0yWqKs=; b=Hn4kPwQ2mLxR9vBcT7yZaE1sDgF6jU0oXiR8kQaP2nZlE5yHbD9cVwSjU7tOmG3xKf A1dNqY8rLpZw6vBhT4cJmE0sXgI9uRtFyO2aQdWkN5bHlP7zCvMjS8eKxA1nTgY4rD6 pQmLfX2wZaB9tV\u2026&#34;
+        }
+      ]
+    },
+    &#34;dkim_summary&#34;: &#34;Signature structure and published key look sane, but cryptographic verification needs the full message body (headers alone do not contain the content that bh= hashes). Paste the complete raw email for a hard pass/fail.&#34;,
+    &#34;dmarc&#34;: {
+      &#34;found&#34;: true,
+      &#34;record&#34;: &#34;v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com&#34;,
+      &#34;located_at&#34;: &#34;_dmarc.icici-netbanking-secure.com&#34;,
+      &#34;from_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+      &#34;org_domain&#34;: &#34;icici-netbanking-secure.com&#34;,
+      &#34;policy&#34;: &#34;quarantine&#34;,
+      &#34;subdomain_policy&#34;: &#34;&#34;,
+      &#34;pct&#34;: 100,
+      &#34;adkim&#34;: &#34;r&#34;,
+      &#34;aspf&#34;: &#34;r&#34;,
+      &#34;rua&#34;: &#34;mailto:reports@icici-netbanking-secure.com&#34;,
+      &#34;ruf&#34;: &#34;&#34;,
+      &#34;spf_aligned&#34;: true,
+      &#34;spf_alignment_detail&#34;: &#34;relaxed mode: organizational domain icici-netbanking-secure.com == icici-netbanking-secure.com&#34;,
+      &#34;dkim_aligned&#34;: true,
+      &#34;dkim_alignment_detail&#34;: &#34;DKIM d=icici-netbanking-secure.com is aligned with From (relaxed mode: organizational domain icici-netbanking-secure.com == icici-netbanking-secure.com).&#34;,
+      &#34;aligned_dkim_domains&#34;: [
+        &#34;icici-netbanking-secure.com&#34;
+      ],
+      &#34;result&#34;: &#34;pass&#34;,
+      &#34;disposition&#34;: &#34;deliver&#34;,
+      &#34;explanation&#34;: &#34;DMARC PASS via aligned SPF and aligned DKIM. The visible From domain is bound to an authenticated identity, so the sender address can be trusted at the domain level.&#34;,
+      &#34;issues&#34;: []
+    },
+    &#34;dmarc_summary&#34;: &#34;DMARC PASS (policy p=quarantine).&#34;,
+    &#34;recorded_by_receiver&#34;: {
+      &#34;present&#34;: true,
+      &#34;consolidated&#34;: {
+        &#34;spf&#34;: &#34;pass&#34;,
+        &#34;dkim&#34;: &#34;pass&#34;,
+        &#34;dmarc&#34;: &#34;pass&#34;
+      },
+      &#34;authentication_results&#34;: [
+        {
+          &#34;authserv_id&#34;: &#34;mx.examplemail.in&#34;,
+          &#34;methods&#34;: {
+            &#34;spf&#34;: &#34;pass&#34;,
+            &#34;dkim&#34;: &#34;pass&#34;,
+            &#34;dmarc&#34;: &#34;pass&#34;
+          },
+          &#34;properties&#34;: {
+            &#34;smtp.mailfrom&#34;: &#34;alerts@icici-netbanking-secure.com&#34;,
+            &#34;header.d&#34;: &#34;icici-netbanking-secure.com&#34;,
+            &#34;header.s&#34;: &#34;s1&#34;,
+            &#34;header.from&#34;: &#34;icici-netbanking-secure.com&#34;
+          },
+          &#34;raw&#34;: &#34;mx.examplemail.in; spf=pass (mx.examplemail.in: domain of alerts@icici-netbanking-secure.com designates 45.133.1.88 as permitted sender) smtp.mailfrom=alerts@icici-netbanking-secure.com; dkim=pass header.d=icici-netbanking-secure.com header.s=s1; dmarc=pass (p=QUARANTINE dis=NONE) header.from=icici\u2026&#34;
+        }
+      ],
+      &#34;received_spf&#34;: [
+        {
+          &#34;authserv_id&#34;: &#34;&#34;,
+          &#34;methods&#34;: {
+            &#34;spf&#34;: &#34;pass&#34;
+          },
+          &#34;properties&#34;: {
+            &#34;client-ip&#34;: &#34;45.133.1.88&#34;
+          },
+          &#34;raw&#34;: &#34;pass (mx.examplemail.in: 45.133.1.88 is authorised) client-ip=45.133.1.88;&#34;
+        }
+      ],
+      &#34;authserv_ids&#34;: [
+        &#34;mx.examplemail.in&#34;
+      ]
+    },
+    &#34;recorded_summary&#34;: &#34;Receiving server recorded: SPF=pass, DKIM=pass, DMARC=pass.&#34;
+  },
+  &#34;findings&#34;: [
+    {
+      &#34;id&#34;: &#34;display_name_brand_impersonation&#34;,
+      &#34;title&#34;: &#34;Display name impersonates Icici&#34;,
+      &#34;severity&#34;: &#34;high&#34;,
+      &#34;score&#34;: 30,
+      &#34;detail&#34;: &#34;The sender presents itself as \&#34;ICICI Bank Alerts\&#34; but the mail originates from icici-netbanking-secure.com, which is not a domain operated by Icici (legitimate: icicibank.com, icicibank.net).&#34;,
+      &#34;category&#34;: &#34;identity&#34;,
+      &#34;evidence&#34;: &#34;From: \&#34;ICICI Bank Alerts\&#34; &lt;alerts@icici-netbanking-secure.com&gt;&#34;,
+      &#34;recommendation&#34;: &#34;Reach Icici through their official app or website, never this message.&#34;
+    },
+    {
+      &#34;id&#34;: &#34;lookalike_brand_in_label&#34;,
+      &#34;title&#34;: &#34;Brand name &#39;icici&#39; embedded in an unrelated domain&#34;,
+      &#34;severity&#34;: &#34;high&#34;,
+      &#34;score&#34;: 24,
+      &#34;detail&#34;: &#34;The domain icici-netbanking-secure.com contains the brand \&#34;icici\&#34; but is not operated by it. Attackers register names like this so the brand appears in the address bar and the From line.&#34;,
+      &#34;category&#34;: &#34;identity&#34;,
+      &#34;evidence&#34;: &#34;icici-netbanking-secure.com&#34;,
+      &#34;recommendation&#34;: &#34;&#34;
+    },
+    {
+      &#34;id&#34;: &#34;subject_social_engineering&#34;,
+      &#34;title&#34;: &#34;Subject uses pressure / credential-harvesting language&#34;,
+      &#34;severity&#34;: &#34;medium&#34;,
+      &#34;score&#34;: 6,
+      &#34;detail&#34;: &#34;The subject matches known phishing patterns (urgency). Manufactured urgency is designed to stop the reader from checking the sender.&#34;,
+      &#34;category&#34;: &#34;content&#34;,
+      &#34;evidence&#34;: &#34;Subject: Action required: your net banking access will be suspended today&#34;,
+      &#34;recommendation&#34;: &#34;Never act on urgency in an email; verify through an independent channel.&#34;
+    },
+    {
+      &#34;id&#34;: &#34;received_single_hop&#34;,
+      &#34;title&#34;: &#34;Single-hop delivery path&#34;,
+      &#34;severity&#34;: &#34;low&#34;,
+      &#34;score&#34;: 5,
+      &#34;detail&#34;: &#34;Only one Received header is present. Direct-to-MX delivery is normal for some small senders but is also what a script sending straight to the victim&#39;s mail server produces.&#34;,
+      &#34;category&#34;: &#34;transport&#34;,
+      &#34;evidence&#34;: &#34;from mail.icici-netbanking-secure.com (mail.icici-netbanking-secure.com [45.133.1.88]) by mx.examplemail.in with ESMTPS id 8Tq2LmN4vR7 (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384) for &lt;manoj@exampl\u2026&#34;,
+      &#34;recommendation&#34;: &#34;&#34;
+    },
+    {
+      &#34;id&#34;: &#34;dmarc_pass&#34;,
+      &#34;title&#34;: &#34;DMARC PASS&#34;,
+      &#34;severity&#34;: &#34;good&#34;,
+      &#34;score&#34;: -22,
+      &#34;detail&#34;: &#34;DMARC PASS via aligned SPF and aligned DKIM. The visible From domain is bound to an authenticated identity, so the sender address can be trusted at the domain level.&#34;,
+      &#34;category&#34;: &#34;authentication&#34;,
+      &#34;evidence&#34;: &#34;record: v=DMARC1; p=quarantine; rua=mailto:reports@icici-netbanking-secure.com&#34;,
+      &#34;recommendation&#34;: &#34;&#34;
+    },
+    {
+      &#34;id&#34;: &#34;spf_pass&#34;,
+      &#34;title&#34;: &#34;SPF PASS&#34;,
+      &#34;severity&#34;: &#34;good&#34;,
+      &#34;score&#34;: -8,
+      &#34;detail&#34;: &#34;IP 45.133.1.88 matched mechanism &#39;ip4:45.133.1.0/24&#39; in icici-netbanking-secure.com&#39;s SPF record - the sender is authorised to send.&#34;,
+      &#34;category&#34;: &#34;authentication&#34;,
+      &#34;evidence&#34;: &#34;record: v=spf1 ip4:45.133.1.0/24 -all&#34;,
+      &#34;recommendation&#34;: &#34;&#34;
+    }
+  ],
+  &#34;verdict&#34;: {
+    &#34;score&#34;: 65,
+    &#34;raw_score&#34;: 65,
+    &#34;credit&#34;: 0,
+    &#34;label&#34;: &#34;Likely Spoofed&#34;,
+    &#34;headline&#34;: &#34;Treat as hostile.&#34;,
+    &#34;advice&#34;: &#34;The evidence points to a forged sender. Do not reply, click links, open attachments or act on any instruction in the message.&#34;,
+    &#34;grade&#34;: &#34;B&#34;,
+    &#34;grade_reason&#34;: &#34;DMARC is enforced with p=quarantine; failing mail is filtered but not refused.&#34;,
+    &#34;confidence&#34;: &#34;medium&#34;,
+    &#34;confidence_reason&#34;: &#34;Confidence is reduced because DNS answers came from the bundled offline fixture set rather than live queries, so published policies may have changed; only headers were supplied, so DKIM could be audited structurally but not verified cryptographically.&#34;,
+    &#34;capped_for_insufficient_evidence&#34;: false,
+    &#34;counts&#34;: {
+      &#34;critical&#34;: 0,
+      &#34;high&#34;: 2,
+      &#34;medium&#34;: 1,
+      &#34;low&#34;: 1,
+      &#34;info&#34;: 0,
+      &#34;good&#34;: 2,
+      &#34;total&#34;: 6
+    },
+    &#34;top_reasons&#34;: [
+      &#34;Display name impersonates Icici&#34;,
+      &#34;Brand name &#39;icici&#39; embedded in an unrelated domain&#34;
+    ]
+  },
+  &#34;recommendations&#34;: {
+    &#34;recipient&#34;: [
+      &#34;Do not reply, click any link, open attachments, or act on instructions in this message.&#34;,
+      &#34;Report it to your IT/security team and preserve the original headers as evidence.&#34;,
+      &#34;Reach Icici through their official app or website, never this message.&#34;
+    ],
+    &#34;domain_owner&#34;: []
+  }
+}</pre>
+  </details>
+
+  
+</main>
+
+<footer class="wrap foot">
+  <p>Email Header Analyzer v1.0.0 &mdash;
+     SPF (RFC 7208), DKIM (RFC 6376), DMARC (RFC 7489).
+     Educational / defensive use.</p>
+</footer>
+
+</body>
+</html>

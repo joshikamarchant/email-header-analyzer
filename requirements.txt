@@ -1,0 +1,12 @@
+# Email Header Analyzer - dependencies
+# All packages are free and open-source. No API keys, no paid services.
+#
+#   pip install -r requirements.txt
+
+dnspython>=2.4.0        # DNS resolution for SPF / DKIM / DMARC records
+dkimpy>=1.1.5           # cryptographic DKIM verification (full messages)
+Flask>=3.0.0            # web interface
+cryptography>=41.0.0    # RSA public-key parsing (key size reporting)
+
+# Development / testing only
+pytest>=7.4.0

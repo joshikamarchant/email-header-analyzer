@@ -1,0 +1,16 @@
+Delivered-To: all-staff@sfo-campus.in
+Received: from [91.200.12.44] (unknown [91.200.12.44])
+        by mx.sfo-campus.in with ESMTP id 9D1xKw2mQ7
+        for <all-staff@sfo-campus.in>; Sat, 08 Nov 2026 09:05:17 +0530
+Authentication-Results: mx.sfo-campus.in;
+       spf=fail (mx.sfo-campus.in: domain of hr@sfo-campus.in does not designate 91.200.12.44 as permitted sender) smtp.mailfrom=hr@sfo-campus.in;
+       dkim=none;
+       dmarc=none header.from=sfo-campus.in
+Return-Path: <hr@sfo-campus.in>
+From: "HR Department" <hr@sfo-campus.in>
+To: all-staff@sfo-campus.in
+Subject: Revised salary structure - confirm your bank account details today
+Date: Sat, 08 Nov 2026 03:35:10 +0000
+Message-ID: <20261108033510.4411@sfo-campus.in>
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"

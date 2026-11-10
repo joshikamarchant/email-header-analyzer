@@ -1,0 +1,16 @@
+Delivered-To: manoj@examplemail.in
+Received: from mail.campus-itdesk.com (mail.campus-itdesk.com [91.200.12.44])
+        by mx.examplemail.in with ESMTP id 7K2pQw9mL4
+        for <manoj@examplemail.in>; Thu, 06 Nov 2026 14:02:31 +0530
+Received: from localhost (unknown [192.168.1.57])
+        by mail.campus-itdesk.com with SMTP id 3A91ZxYw;
+        Thu, 06 Nov 2026 14:12:00 +0530
+Return-Path: <it-support@campus-itdesk.com>
+From: "IT Service Desk" <it-support@campus-itdesk.com>
+To: manoj@examplemail.in
+Subject: Mailbox quota exceeded - re-validate your password immediately
+Date: Thu, 06 Nov 2026 16:30:00 +0530
+X-PHP-Originating-Script: 33:mailer.php
+X-Mailer: PHPMailer 5.2.22
+MIME-Version: 1.0
+Content-Type: text/html; charset="iso-8859-1"
